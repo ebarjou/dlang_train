@@ -1,0 +1,9 @@
+{
+	"name": "dproject",
+	"authors": [
+		"Emile Barjou"
+	],
+	"description": "A minimal D application.",
+	"copyright": "Copyright © 2018, Emile Barjou",
+	"license": "proprietary"
+}
