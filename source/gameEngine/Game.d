@@ -11,7 +11,11 @@ import std.concurrency;
 
 void gameMain(){
     write("Starting Engine... ");
-    Tid playerTid = receiveOnly!Tid();
+    Tid mainTid = receiveOnly!Tid();
+    //Load engine
+    send!bool(mainTid, true);
+
+    Tid[uint] playerTids;
     writeln("Ok !");
     string command = "";
     while(command != "exit") {
@@ -19,16 +23,20 @@ void gameMain(){
             (immutable Action action){
                 command = "received Action.";
                 writeln("type : ", action.type ,", x : ", action.xs, ", y : ", action.ys);
-                send!bool(playerTid,true);
+                send!bool(playerTids[action.playerId],true);
             },
             (TurnAction turnAction){
                 command = "received TurnAction.";
+            },
+            (Tid playerThread){
+                uint newPlayerId = 47;
+                playerTids[newPlayerId] = playerThread;
+                send!uint(playerThread, newPlayerId);
             },
             (Variant variant){
                 command = "received incorrect object";
             }
         );
-        writeln("Game : ", command);
     }
     
     Map _map = new Map(5,10,Map.Connectivity.hexConn);
@@ -40,9 +48,13 @@ class Game {
     private TurnPhase currentPhase;
     private uint currentTurn;
 
-    this(){
+    private this(){
         currentTurn = 0;
         currentPhase = TurnPhase.Move;
+    }
+
+    static void spawn(){
+
     }
 
     /**

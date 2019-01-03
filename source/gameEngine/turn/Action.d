@@ -2,6 +2,7 @@ module gameEngine.turn.Action;
 
 import gameEngine.actor.Building;
 import gameEngine.actor.Unit;
+import gameEngine.turn.TurnAction;
 import std.conv;
 
 class Action {
@@ -13,14 +14,16 @@ class Action {
     public immutable Building.Type buildingType;
     public immutable uint xs, ys;
     public immutable uint xt, yt;
+    public immutable TurnAction actionTurn;
 
     /**
     * Create a send action (validate the turn)
     */
-    this() immutable {
+    this(TurnAction actionTurn) immutable {
         this.type = Type.SEND;
         this.playerId = playerId;
-        
+        this.actionTurn = null;//actionTurn.idup();
+
         //Unused member for this action type
         this.xs = 0;
         this.ys = 0;
@@ -43,6 +46,7 @@ class Action {
         //Unused member for this action type
         unitType = Unit.Type.INFANTERY;
         buildingType = Building.Type.GENERATOR;
+        actionTurn = null;
     }
 
     /**
@@ -59,6 +63,7 @@ class Action {
         this.xt = 0;
         this.yt = 0;
         unitType = Unit.Type.INFANTERY;
+        actionTurn = null;
     }
 
     /**
@@ -75,5 +80,6 @@ class Action {
         this.xt = 0;
         this.yt = 0;
         buildingType = Building.Type.GENERATOR;
+        actionTurn = null;
     }
 }
