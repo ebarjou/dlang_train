@@ -25,10 +25,6 @@ void gameMain(){
                 writeln("type : ", action.type ,", x : ", action.xs, ", y : ", action.ys);
                 send!bool(playerTids[action.playerId],true);
             },
-            (TurnAction turnAction){
-                command = "received TurnAction.";
-                send!bool(playerTids[turnAction.playerId],true);
-            },
             (Tid playerThread){
                 uint newPlayerId = 47;
                 playerTids[newPlayerId] = playerThread;
@@ -38,6 +34,7 @@ void gameMain(){
                 command = "received incorrect object";
             }
         );
+        writeln(command);
     }
     
     Map _map = new Map(5,10,Map.Connectivity.hexConn);

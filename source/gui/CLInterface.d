@@ -13,40 +13,51 @@ import gameEngine.turn.TurnAction;
 
 class CLInterface : IUserInterface {
     private Tid gameEngine;
+    private Tid async_io;
     private immutable uint playerId;
 
     private this(Tid gameEngine){
         this.gameEngine = gameEngine;
         send!Tid(gameEngine, thisTid());
         playerId = receiveOnly!uint();
-    }
-
-    public static void spawn(Tid gameEngine){
         
+        this.async_io = spawn(&CLInterface.async_readln);
+        send!Tid(async_io, thisTid());
     }
 
     public static void start(Tid gameEngine){
         CLInterface cli = new CLInterface(gameEngine);
-        cli.loop();
+        cli.receiveLoop();
     }
 
-    public void loop(){
-        string line;
-
+    public static void async_readln(){
+        Tid gui = receiveOnly!Tid();
         do{
             write(" > ");
             stdout.flush();
-            line = stdin.readln();
-            try {
-                immutable Action action = parseCommand(line);
-                send!(immutable Action)(gameEngine, action);
-                if(receiveOnly!bool()){
-                    writeln("Ok !");
+            immutable string line = stdin.readln();
+            send!(immutable string)(gui, line);
+        } while(true);
+    }
+
+    public void receiveLoop(){
+        writeln("CLInterface listening...");
+        do{
+            receive(
+                (string input){
+                    try {
+                        immutable Action action = parseCommand(input);
+                        send!(immutable Action)(gameEngine, action);
+                        if(receiveOnly!bool()){
+                            writeln("Ok !");
+                        }
+                    } catch (Exception e){
+                        writeln(e.msg);
+                    }
                 }
-            } catch (Exception e){
-                writeln(e.msg);
-            }
-        } while(line !is null);
+            );
+        } while(true);
+        
     }
 
     private Captures!string matchRegex(string str, string rgx, uint nb_expected){
