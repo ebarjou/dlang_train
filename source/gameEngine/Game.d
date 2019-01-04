@@ -27,6 +27,7 @@ void gameMain(){
             },
             (TurnAction turnAction){
                 command = "received TurnAction.";
+                send!bool(playerTids[turnAction.playerId],true);
             },
             (Tid playerThread){
                 uint newPlayerId = 47;

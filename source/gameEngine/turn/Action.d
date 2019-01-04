@@ -22,7 +22,7 @@ class Action {
     this(TurnAction actionTurn) immutable {
         this.type = Type.SEND;
         this.playerId = playerId;
-        this.actionTurn = null;//actionTurn.idup();
+        this.actionTurn = new immutable TurnAction(actionTurn);
 
         //Unused member for this action type
         this.xs = 0;

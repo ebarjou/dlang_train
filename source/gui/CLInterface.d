@@ -11,7 +11,7 @@ import gameEngine.actor.Building;
 import gameEngine.turn.Action;
 import gameEngine.turn.TurnAction;
 
-class CLInterface{
+class CLInterface : IUserInterface {
     private Tid gameEngine;
     private immutable uint playerId;
 
@@ -22,11 +22,15 @@ class CLInterface{
     }
 
     public static void spawn(Tid gameEngine){
-        CLInterface cli = new CLInterface(gameEngine);
-        cli.start();
+        
     }
 
-    public void start(){
+    public static void start(Tid gameEngine){
+        CLInterface cli = new CLInterface(gameEngine);
+        cli.loop();
+    }
+
+    public void loop(){
         string line;
 
         do{
@@ -45,7 +49,7 @@ class CLInterface{
         } while(line !is null);
     }
 
-    Captures!string matchRegex(string str, string rgx, uint nb_expected){
+    private Captures!string matchRegex(string str, string rgx, uint nb_expected){
         auto regex_match = regex(rgx);
         Captures!string output = str.matchAll(regex_match).front;
         if(nb_expected > 0 && output.length != nb_expected+1)
@@ -53,7 +57,7 @@ class CLInterface{
         return output;
     }
 
-    immutable(Action) parseCommand(string cmd){
+    private immutable(Action) parseCommand(string cmd){
         if(cmd.length < 2)
             throw new Exception("Command too short.");
         //Send command
@@ -91,7 +95,8 @@ class CLInterface{
                     );
                 return action;
             case "sendturn":
-                auto action = new immutable Action(new TurnAction());
+                TurnAction turnAction = new TurnAction(playerId);
+                auto action = new immutable Action(turnAction);
                 return action;
             default:
                 throw new Exception("Unknow command name.");

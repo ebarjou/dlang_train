@@ -16,5 +16,5 @@ void main() {
         return;
 
     //Start CLI
-    CLInterface.spawn(gameEngine);
+    CLInterface.start(gameEngine);
 }

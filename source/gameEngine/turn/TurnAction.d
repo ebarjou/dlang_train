@@ -6,11 +6,19 @@ import std.container : DList;
 
 class TurnAction{
     private DList!Action _actionList;
-    private bool isValid;
+    private bool valid;
+    public immutable uint playerId;
 
-    this(){
+    this(uint playerId){
         _actionList = DList!Action();
-        isValid = true;
+        valid = true;
+        this.playerId = playerId;
+    }
+
+    this(TurnAction turnAction) immutable {
+        _actionList = turnAction.getDList();
+        valid = turnAction.isValid();
+        this.playerId = turnAction.playerId;
     }
 
     public void insert(Action action){
@@ -21,14 +29,18 @@ class TurnAction{
         _actionList.removeBack();
     }
 
-    public auto getArray(){
-        return _actionList[];
+    public auto getDList() {
+        return cast(immutable) _actionList.dup();
     }
 
     public Action pop(){
         Action action = _actionList.front();
         _actionList.removeFront();
         return action;
+    }
+
+    public bool isValid(){
+        return valid;
     }
 
     unittest {
