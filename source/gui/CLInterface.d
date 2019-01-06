@@ -56,8 +56,7 @@ class CLInterface : IUserInterface {
                     }
                 }
             );
-        } while(true);
-        
+        } while(true);  
     }
 
     private Captures!string matchRegex(string str, string rgx, uint nb_expected){

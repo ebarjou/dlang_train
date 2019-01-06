@@ -4,55 +4,27 @@ import gameEngine.map.Map;
 import gameEngine.player.IPlayer;
 import gameEngine.turn.Action;
 import gameEngine.turn.TurnAction;
+import gameEngine.GameReceiver;
+import gameEngine.actor.Unit;
+import gameEngine.actor.Building;
+import gameEngine.GameState;
 
 import std.stdio;
 import std.random;
 import std.concurrency;
 
-void gameMain(){
-    write("Starting Engine... ");
-    Tid mainTid = receiveOnly!Tid();
-    //Load engine
-    send!bool(mainTid, true);
-
-    Tid[uint] playerTids;
-    writeln("Ok !");
-    string command = "";
-    while(command != "exit") {
-        receive(
-            (immutable Action action){
-                command = "received Action.";
-                writeln("type : ", action.type ,", x : ", action.xs, ", y : ", action.ys);
-                send!bool(playerTids[action.playerId],true);
-            },
-            (Tid playerThread){
-                uint newPlayerId = 47;
-                playerTids[newPlayerId] = playerThread;
-                send!uint(playerThread, newPlayerId);
-            },
-            (Variant variant){
-                command = "received incorrect object";
-            }
-        );
-        writeln(command);
-    }
-    
-    Map _map = new Map(5,10,Map.Connectivity.hexConn);
-}
-
 class Game {
-    public enum TurnPhase {Move, Battle, Retreat}
-    private Map _map;
-    private TurnPhase currentPhase;
-    private uint currentTurn;
+    private GameReceiver receiver;
+    private GameState gameState;
+    private PlayerData[uint] playerDatas;
 
     private this(){
-        currentTurn = 0;
-        currentPhase = TurnPhase.Move;
+        
     }
 
-    static void spawn(){
-
+    public static loop(){
+        Game game = new Game();
+        receiver.loop(game);
     }
 
     /**
@@ -62,20 +34,48 @@ class Game {
     * Returns:
     *       id of the added player
     */
-    uint addPlayer(){
-        return uniform(uint.min, uint.max);
+    uint addPlayer(Tid playerTid){
+        uint newId = uniform(uint.min, uint.max);
+        playerDatas[newId] = PlayerData(newId, playerTid);
+        return newId;
     }
 
-    void removePlayer(uint id){
-
+    bool isPlayerPresent(uint playerId){
+        return ((playerId in playerDatas) !is null);
     }
 
-    bool isActionValid(int playerId, Action action){
+    void removePlayer(uint playerId){
+        playerDatas.remove(playerId);
+    }
+
+    bool isActionValid(immutable Action action){
         return true;
     }
 
-    void submitTurnAction(int playerId, TurnAction turnAction){
+    void submitTurnAction(immutable TurnAction turnAction){
         
     }
 
+    PlayerData getPlayerData(uint playerId){
+        return playerDatas[playerId];
+    }
+
+    /**
+    * Apply an action on the GameState
+    */
+    void submitAction(Action action){
+
+    }
+
+    void moveUnit(uint sx, uint sy, uint tx, uint ty){
+
+    }
+
+    void queueUnit(uint x, uint y, Unit.Type type){
+
+    }
+
+    void queueBuilding(uint x, uint y, Building.Type type){
+        
+    }
 }

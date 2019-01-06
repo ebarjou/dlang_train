@@ -10,7 +10,7 @@ void main() {
     writeln("Starting application...");
 
     //Initialize Engine
-    Tid gameEngine = spawn(&gameMain);
+    Tid gameEngine = spawn(&Game.loop);
     send!Tid(gameEngine, thisTid());
     if(!receiveOnly!bool())
         return;
