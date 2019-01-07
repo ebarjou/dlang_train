@@ -1,13 +1,9 @@
-module gameEngine.game_receiver;
+module game_engine.game_receiver;
 
-import gameEngine.map.Map;
-import gameEngine.player.IPlayer;
-import gameEngine.turn.Action;
-import gameEngine.turn.TurnAction;
-import gameEngine.Game;
+import game_engine.turn.Action;
+import game_engine.Game;
 
 import std.stdio;
-import std.random;
 import std.concurrency;
 import core.time;
 

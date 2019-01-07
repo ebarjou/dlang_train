@@ -1,4 +1,4 @@
-module gui.CLInterface;
+module gui.cli_interface;
 
 import gui.IUserInterface;
 import std.stdio;

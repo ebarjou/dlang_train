@@ -1,4 +1,4 @@
-module gui.IUserInterface;
+module gui.i_user_interface;
 
 import std.concurrency;
 
