@@ -1,6 +1,6 @@
-module game_angine.turn.turn_action;
+module game_engine.turn.turn_action;
 
-import game_angine.turn.action;
+import game_engine.turn.action;
 
 import std.container : DList;
 

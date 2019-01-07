@@ -1,15 +1,16 @@
 module gui.cli_interface;
 
-import gui.IUserInterface;
+import gui.i_user_interface;
+import game_engine.actor.unit;
+import game_engine.actor.building;
+import game_engine.turn.action;
+import game_engine.turn.turn_action;
+
 import std.stdio;
 import std.concurrency;
 import std.regex;
 import std.conv;
 import std.exception;
-import gameEngine.actor.Unit;
-import gameEngine.actor.Building;
-import gameEngine.turn.Action;
-import gameEngine.turn.TurnAction;
 
 class CLInterface : IUserInterface {
     private Tid gameEngine;

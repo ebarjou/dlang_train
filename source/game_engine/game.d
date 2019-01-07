@@ -1,11 +1,12 @@
 module game_engine.game;
 
-import gameEngine.turn.Action;
-import gameEngine.turn.TurnAction;
-import gameEngine.GameReceiver;
-import gameEngine.actor.Unit;
-import gameEngine.actor.Building;
-import gameEngine.GameState;
+import game_engine.turn.action;
+import game_engine.turn.turn_action;
+import game_engine.game_receiver;
+import game_engine.actor.unit;
+import game_engine.actor.building;
+import game_engine.game_state;
+import game_engine.player.i_player;
 
 import std.random;
 import std.concurrency;

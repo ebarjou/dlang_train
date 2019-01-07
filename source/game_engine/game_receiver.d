@@ -1,7 +1,7 @@
 module game_engine.game_receiver;
 
-import game_engine.turn.Action;
-import game_engine.Game;
+import game_engine.turn.action;
+import game_engine.game;
 
 import std.stdio;
 import std.concurrency;

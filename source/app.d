@@ -1,10 +1,9 @@
-
-import gameEngine.Game;
-import gameEngine.turn.Action;
+import game_engine.game;
+import game_engine.turn.action;
 
 import std.stdio;
 import std.concurrency;
-import gui.CLInterface;
+import gui.cli_interface;
 
 void main() {
     writeln("Starting application...");
