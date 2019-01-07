@@ -18,6 +18,8 @@ class CLInterface : IUserInterface {
 
     private this(Tid gameEngine){
         this.gameEngine = gameEngine;
+
+        writeln("INTERFACE : Adding new player...");
         send!Tid(gameEngine, thisTid());
         playerId = receiveOnly!uint();
         
@@ -26,6 +28,7 @@ class CLInterface : IUserInterface {
     }
 
     public static void start(Tid gameEngine){
+        writeln("INTERFACE : starting...");
         CLInterface cli = new CLInterface(gameEngine);
         cli.receiveLoop();
     }
@@ -37,11 +40,12 @@ class CLInterface : IUserInterface {
             stdout.flush();
             immutable string line = stdin.readln();
             send!(immutable string)(gui, line);
+            receiveOnly!bool();
         } while(true);
     }
 
     public void receiveLoop(){
-        writeln("CLInterface listening...");
+        writeln("INTERFACE : Waiting for input...");
         do{
             receive(
                 (string input){
@@ -49,8 +53,9 @@ class CLInterface : IUserInterface {
                         immutable Action action = parseCommand(input);
                         send!(immutable Action)(gameEngine, action);
                         if(receiveOnly!bool()){
-                            writeln("Ok !");
+                            writeln("INTERFACE : Server response received.");
                         }
+                        send!bool(async_io, true);
                     } catch (Exception e){
                         writeln(e.msg);
                     }
@@ -106,7 +111,7 @@ class CLInterface : IUserInterface {
                 return action;
             case "sendturn":
                 TurnAction turnAction = new TurnAction(playerId);
-                auto action = new immutable Action(turnAction);
+                auto action = new immutable Action(playerId, turnAction);
                 return action;
             default:
                 throw new Exception("Unknow command name.");

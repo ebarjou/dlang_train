@@ -1,4 +1,4 @@
-module gameEngine.actor.Unit;
+module game_engine.actor.unit;
 
 class Unit{
     enum Type {INFANTERY}

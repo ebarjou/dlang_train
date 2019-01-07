@@ -1,7 +1,7 @@
-module gameEngine.map.Map;
+module game_engine.map.map;
 
-import gameEngine.map.BoardData;
-import std.stdio;
+import game_engine.map.board_data;
+
 import std.container;
 import std.file;
 import std.json;
@@ -150,6 +150,7 @@ class Map {
     }
 
     unittest {
+        import std.stdio;
         Map map = new Map(25, 19, Map.Connectivity.eightConn);
         foreach(string type; map.dataTypes)
             assert(map.containsKey(type));

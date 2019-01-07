@@ -1,7 +1,4 @@
-module gameEngine.map.BoardData;
-
-import std.variant;
-import core.exception;
+module game_engine.map.board_data;
 
 class BoardData(D) {
     private uint _width, _height;
@@ -29,6 +26,7 @@ class BoardData(D) {
     }
 
     unittest {
+        import core.exception;
         BoardData!uint boardData = new BoardData!uint(37, 12);
         {
             boardData.addDataType("u1");

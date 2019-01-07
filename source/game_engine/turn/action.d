@@ -1,9 +1,8 @@
-module gameEngine.turn.Action;
+module game_engine.turn.action;
 
-import gameEngine.actor.Building;
-import gameEngine.actor.Unit;
-import gameEngine.turn.TurnAction;
-import std.conv;
+import game_engine.actor.building;
+import game_engine.actor.unit;
+import game_engine.turn.turn_action;
 
 class Action {
     public enum Type {MOVE, QBUILD, QUNIT, SEND}
@@ -19,7 +18,7 @@ class Action {
     /**
     * Create a send action (validate the turn)
     */
-    this(TurnAction actionTurn) immutable {
+    this(uint playerId, TurnAction actionTurn) immutable {
         this.type = Type.SEND;
         this.playerId = playerId;
         this.actionTurn = new immutable TurnAction(actionTurn);

@@ -1,4 +1,4 @@
-module gameEngine.player.BotPlayer;
+module game_engine.player.bot_player;
 
 import gameEngine.player.IPlayer;
 

@@ -1,4 +1,4 @@
-module gameEngine.player.IPlayer;
+module game_engine.player.i_player;
 
 import std.concurrency;
 

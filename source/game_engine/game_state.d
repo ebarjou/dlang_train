@@ -1,4 +1,4 @@
-module gameEngine.GameState;
+module game_engine.game_state;
 
 class GameState {
     public enum TurnPhase {Move, Battle, Retreat}

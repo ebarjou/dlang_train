@@ -1,7 +1,5 @@
-module gameEngine.Game;
+module game_engine.game;
 
-import gameEngine.map.Map;
-import gameEngine.player.IPlayer;
 import gameEngine.turn.Action;
 import gameEngine.turn.TurnAction;
 import gameEngine.GameReceiver;
@@ -9,12 +7,10 @@ import gameEngine.actor.Unit;
 import gameEngine.actor.Building;
 import gameEngine.GameState;
 
-import std.stdio;
 import std.random;
 import std.concurrency;
 
 class Game {
-    private GameReceiver receiver;
     private GameState gameState;
     private PlayerData[uint] playerDatas;
 
@@ -24,7 +20,7 @@ class Game {
 
     public static loop(){
         Game game = new Game();
-        receiver.loop(game);
+        GameReceiver.loop(game);
     }
 
     /**
