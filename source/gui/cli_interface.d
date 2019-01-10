@@ -1,60 +1,47 @@
 module gui.cli_interface;
 
-import gui.i_user_interface;
+import gui.a_user_interface;
 import game_engine.actor.unit;
 import game_engine.actor.building;
 import game_engine.turn.action;
 import game_engine.turn.turn_action;
+import game_engine.game_receiver;
+import game_engine.game_state;
 
 import std.stdio;
 import std.concurrency;
 import std.regex;
 import std.conv;
 import std.exception;
+import core.time;
 
-class CLInterface : IUserInterface {
-    private Tid gameEngine;
-    private Tid async_io;
-    private immutable uint playerId;
+class CLInterface : AUserInterface {
+    
+    public this(Tid gameEngine){
+        super(gameEngine);
 
-    private this(Tid gameEngine){
-        this.gameEngine = gameEngine;
-
-        writeln("INTERFACE : Adding new player...");
-        send!Tid(gameEngine, thisTid());
-        playerId = receiveOnly!uint();
-        
-        this.async_io = spawn(&CLInterface.async_readln);
+        this.async_io = spawn(&CLInterface.asyncInput);
         send!Tid(async_io, thisTid());
     }
 
     public static void start(Tid gameEngine){
         writeln("INTERFACE : starting...");
         CLInterface cli = new CLInterface(gameEngine);
-        cli.receiveLoop();
+        cli.loop();
     }
 
-    public static void async_readln(){
-        Tid gui = receiveOnly!Tid();
-        do{
-            write(" > ");
-            stdout.flush();
-            immutable string line = stdin.readln();
-            send!(immutable string)(gui, line);
-            receiveOnly!bool();
-        } while(true);
-    }
-
-    public void receiveLoop(){
+    override protected void loop(){
         writeln("INTERFACE : Waiting for input...");
         do{
             receive(
                 (string input){
                     try {
-                        immutable Action action = parseCommand(input);
-                        send!(immutable Action)(gameEngine, action);
-                        if(receiveOnly!bool()){
-                            writeln("INTERFACE : Server response received.");
+                        MessageType type;
+                        immutable Action action = parseCommand(input, type);
+                        if(type == MessageType.Action) {
+                            sendAction(action);
+                        } else {
+                            sendToken(type);                    
                         }
                         send!bool(async_io, true);
                     } catch (Exception e){
@@ -65,6 +52,21 @@ class CLInterface : IUserInterface {
         } while(true);  
     }
 
+    protected static void asyncInput(){
+        Tid gui = receiveOnly!Tid();
+        do{
+            write(" > ");
+            stdout.flush();
+            immutable string line = stdin.readln();
+            send!(immutable string)(gui, line);
+            receiveOnly!bool();
+        } while(true);
+    }
+
+    override protected void onConnectionLost(){
+        writeln("Interface : Error occured with the server.");
+    }
+
     private Captures!string matchRegex(string str, string rgx, uint nb_expected){
         auto regex_match = regex(rgx);
         Captures!string output = str.matchAll(regex_match).front;
@@ -73,7 +75,7 @@ class CLInterface : IUserInterface {
         return output;
     }
 
-    private immutable(Action) parseCommand(string cmd){
+    private immutable(Action) parseCommand(string cmd, out MessageType type){
         if(cmd.length < 2)
             throw new Exception("Command too short.");
         //Send command
@@ -91,6 +93,7 @@ class CLInterface : IUserInterface {
                     to!uint(args[3]), 
                     to!uint(args[4])
                     );
+                type = MessageType.Action;
                 return action;
             case "qbuild":
                 Captures!string args = matchRegex(arg, "([0-9]+) ([0-9]+) ([0-9]+)", 3);
@@ -100,6 +103,7 @@ class CLInterface : IUserInterface {
                     to!uint(args[2]), 
                     to!uint(args[3])
                     );
+                type = MessageType.Action;
                 return action;
             case "qunit":
                 Captures!string args = matchRegex(arg, "([0-9]+) ([0-9]+) ([0-9]+)", 3);
@@ -109,11 +113,15 @@ class CLInterface : IUserInterface {
                     to!uint(args[2]), 
                     to!uint(args[3])
                     );
+                type = MessageType.Action;
                 return action;
             case "sendturn":
-                TurnAction turnAction = new TurnAction(playerId);
                 auto action = new immutable Action(playerId, turnAction);
+                type = MessageType.Action;
                 return action;
+            case "state":
+                type = MessageType.GetState;
+                return null;
             default:
                 throw new Exception("Unknow command name.");
         }

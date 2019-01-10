@@ -4,7 +4,9 @@ import game_engine.actor.building;
 import game_engine.actor.unit;
 import game_engine.turn.turn_action;
 
-class Action {
+alias ActionShared = immutable(Action);
+
+immutable class Action {
     public enum Type {MOVE, QBUILD, QUNIT, SEND}
 
     public immutable Type type;

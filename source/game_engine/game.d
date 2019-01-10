@@ -16,7 +16,7 @@ class Game {
     private PlayerData[uint] playerDatas;
 
     private this(){
-        
+        this.gameState = new GameState();
     }
 
     public static loop(){
@@ -51,6 +51,10 @@ class Game {
 
     void submitTurnAction(immutable TurnAction turnAction){
         
+    }
+
+    immutable(GameState) getGameState(){
+        return new immutable GameState(this.gameState);
     }
 
     PlayerData getPlayerData(uint playerId){
