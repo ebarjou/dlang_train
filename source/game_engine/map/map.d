@@ -61,6 +61,10 @@ class Map {
         return output;
     }
 
+    public immutable(BoardData!Data) getBoardData(){
+        return _boardData.idup();
+    }
+
     public auto getData(string member)(uint x, uint y){
         return _boardData.get!member(x, y);
     }
@@ -141,4 +145,7 @@ unittest {
     map.setData!"blocked"(2, 2, true);
 
     writeln(map.toString());
+
+    immutable(BoardData!(Data)) ibd = map.getBoardData();
+
 }

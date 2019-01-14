@@ -12,13 +12,23 @@ class BoardData(T) {
         this._data = new T[][](width, height);
     }
 
-    public this(uint width, uint height, T[][] data){
+    private this(uint width, uint height, T[][] data) immutable {
         this.height = width;
         this.width = height;
-        this._data = data.dup;
+
+        T[][] duplicate;
+        for(int i = 0; i < width; ++i){
+            duplicate ~= data[i].dup();
+        }    
+
+        this._data = duplicate.to!(immutable(T[][]));
     }
 
-    public auto get(string member)(uint x, uint y){
+    public auto get(string member)(uint x, uint y) immutable {
+        return mixin("_data[x][y]." ~ member);
+    }
+
+    public auto get(string member)(uint x, uint y) {
         return mixin("_data[x][y]." ~ member);
     }
 
@@ -26,8 +36,8 @@ class BoardData(T) {
         mixin("_data[x][y]." ~ member) = value;
     }
 
-    public immutable(T[]) getData(){
-        return _data[0].idup();
+    public immutable(BoardData) idup(){
+        return new immutable BoardData(this.height, this.width, this._data);
     }
 
 }
