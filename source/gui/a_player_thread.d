@@ -1,4 +1,4 @@
-module gui.a_user_interface;
+module gui.a_player_thread;
 
 import std.concurrency;
 import game_engine.turn.turn_action;
@@ -12,30 +12,40 @@ import std.regex;
 import std.conv;
 import std.exception;
 import core.time;
+import core.thread;
 
-abstract class AUserInterface {
-    protected immutable uint playerId;
+abstract class APlayerThread : Thread {
     private immutable Duration timeout;
     private Tid gameEngine;
-    protected Tid async_io;
+
+    protected uint playerId;
     protected TurnAction turnAction;
 
     protected this(Tid gameEngine){
+        super(&run);
+        writeln("INTERFACE : creating...");
         this.gameEngine = gameEngine;
         this.timeout = 3000.msecs;
+    }
 
+    private void run(){
+        thread_init();
+        init();
+        loop();
+    }
+
+    abstract protected void init();
+    abstract protected void loop();
+    abstract protected void onConnectionLost();
+
+    private void thread_init(){
         writeln("INTERFACE : Adding new player...");
         send!Tid(gameEngine, thisTid());
         playerId = receiveOnly!uint();
+        writeln("INTERFACE : Received player ID.");
 
         this.turnAction = new TurnAction(playerId);
     }
-
-    public static void start(Tid gameEngine);
-
-    abstract protected void loop();
-
-    abstract protected void onConnectionLost();
 
     protected void sendAction(immutable Action action){
         send!(immutable Action)(gameEngine, action);

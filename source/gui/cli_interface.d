@@ -1,6 +1,6 @@
 module gui.cli_interface;
 
-import gui.a_user_interface;
+import gui.a_player_thread;
 import game_engine.actor.unit;
 import game_engine.actor.building;
 import game_engine.turn.action;
@@ -15,19 +15,16 @@ import std.conv;
 import std.exception;
 import core.time;
 
-class CLInterface : AUserInterface {
-    
+class CLInterface : APlayerThread {
+    protected Tid async_io;
+
     public this(Tid gameEngine){
         super(gameEngine);
-
-        this.async_io = spawn(&CLInterface.asyncInput);
-        send!Tid(async_io, thisTid());
     }
 
-    public static void start(Tid gameEngine){
-        writeln("INTERFACE : starting...");
-        CLInterface cli = new CLInterface(gameEngine);
-        cli.loop();
+    override protected void init(){
+        this.async_io = spawn(&CLInterface.asyncInput);
+        send!Tid(async_io, thisTid());
     }
 
     override protected void loop(){
@@ -52,7 +49,11 @@ class CLInterface : AUserInterface {
         } while(true);  
     }
 
-    protected static void asyncInput(){
+    override protected void onConnectionLost(){
+        writeln("Interface : Error occured with the server.");
+    }
+
+    private static void asyncInput(){
         Tid gui = receiveOnly!Tid();
         do{
             write(" > ");
@@ -61,10 +62,6 @@ class CLInterface : AUserInterface {
             send!(immutable string)(gui, line);
             receiveOnly!bool();
         } while(true);
-    }
-
-    override protected void onConnectionLost(){
-        writeln("Interface : Error occured with the server.");
     }
 
     private Captures!string matchRegex(string str, string rgx, uint nb_expected){

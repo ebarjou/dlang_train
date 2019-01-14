@@ -1,68 +1,49 @@
 module game_engine.map.board_data;
 
-class BoardData(D) {
-    private uint _width, _height;
-    private D[][][string] dataArray;
+import std.conv;
 
-    package this(uint width, uint height){
-        BoardData._height = height;
-        BoardData._width = width;
+class BoardData(T) {
+    public immutable uint width, height;
+    private T[][] _data;
+
+    public this(uint width, uint height){
+        this.height = width;
+        this.width = height;
+        this._data = new T[][](width, height);
     }
 
-    package void addDataType(string key){
-        dataArray[key] = new D[][](_width, _height);
+    public this(uint width, uint height, T[][] data){
+        this.height = width;
+        this.width = height;
+        this._data = data.dup;
     }
 
-    package void setData(T)(string key, uint x, uint y, T value){
-        dataArray[key][x][y] = cast(D)value;
+    public auto get(string member)(uint x, uint y){
+        return mixin("_data[x][y]." ~ member);
     }
 
-    package bool containsKey(string key){
-        return (key in dataArray) != null;
+    public void set(string member, D)(uint x, uint y, D value){
+        mixin("_data[x][y]." ~ member) = value;
     }
 
-    public T getData(T)(string key, uint x, uint y){
-        return cast(T)dataArray[key][x][y];
+    public immutable(T[]) getData(){
+        return _data[0].idup();
     }
 
-    unittest {
-        import core.exception;
-        BoardData!uint boardData = new BoardData!uint(37, 12);
-        {
-            boardData.addDataType("u1");
-            boardData.setData!ubyte("u1", 3, 3, 7);
-            assert(boardData.getData!ubyte("u1", 3, 3) == 7);
+}
 
-            boardData.addDataType("b1");
-            boardData.setData!bool("b1", 3, 3, true);
-            assert(boardData.getData!bool("b1", 3, 3) == true);
-        }
-        {
-            boardData.addDataType("d1");
-            boardData.addDataType("d2");
-            boardData.addDataType("d3");
-            assert(boardData.getData!ubyte("d1", 0, 0) == 0);
-            assert(boardData.getData!bool("d2", 36, 11) == false);
-            
-            boardData.setData!ubyte("d1", 1, 4, 45);
-            boardData.setData!char("d3", 1, 4, 'a');
-
-            assert(boardData.getData!ubyte("d1", 1, 4) == 45);
-            assert(boardData.getData!bool("d2", 1, 4) == false);
-            assert(boardData.getData!char("d3", 1, 4) == 'a');
-            
-            try{
-                uint err1 = boardData.getData!ubyte("d1", 37, 0);
-                assert(false);
-            } catch(RangeError err){
-                assert(true);
-            }
-            try{
-                uint err1 = boardData.getData!ubyte("d4", 1, 4);
-                assert(false);
-            } catch(RangeError err){
-                assert(true);
-            }
-        }
+unittest {
+    import std.stdio;
+    struct DataTest {
+        uint x;
+        char c;
+        float y;
     }
+
+    BoardData!(DataTest) bd = new BoardData!(DataTest)(10, 20);
+
+    bd.set!"x"(0, 0, 2);
+    uint x = bd.get!"x"(0,0);
+
+    assert(x == 2);
 }

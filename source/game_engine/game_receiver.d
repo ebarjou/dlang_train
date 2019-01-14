@@ -29,10 +29,6 @@ class GameReceiver {
         writeln("SERVER : Starting Engine... ");
         instance = new GameReceiver(game);
 
-        writeln("SERVER : Waiting main thread... ");
-        Tid mainTid = receiveOnly!Tid();
-        send!bool(mainTid, true);
-
         writeln("SERVER : Started.");
 
         do {

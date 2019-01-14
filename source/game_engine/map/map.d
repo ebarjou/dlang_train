@@ -7,50 +7,32 @@ import std.file;
 import std.json;
 import std.conv : to;
 
-struct Node {
-    uint x;
-    uint y;
-    uint d;
-    uint c;
-    this(uint x, uint y, uint c, uint d){
-        this.x = x;
-        this.y = y;
-        this.d = d;
-        this.c = c;
-    }
-    this(uint x, uint y, uint c, uint xt, uint yt){
-        this.x = x;
-        this.y = y;
-        this.c = c;
-        this.d = (x-xt)*(x-xt) + (y-yt)*(y-yt);
-    }
+immutable static enum Connectivity {fourConn=0, eightConn, hexConn}
+
+struct Data {
+    bool blocked;
+    uint owner;
+    bool buildingSite;
+    uint buildingType;
+    bool ressource;
+    uint ressourceType;
 }
 
 class Map {
-    public immutable static enum Connectivity {fourConn=0, eightConn, hexConn}
     private immutable static byte[][][] moves = [
         [[1, 0], [-1, 0], [0, 1], [0, -1]],
         [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [1, 1], [-1, 1], [-1, -1]],
         [[-1, -1], [-1, 0], [-1, 1], [0, 1], [1, 0], [0, -1]]
     ];
-    public immutable string[] dataTypes = [
-        "bBlocked", 
-        "iOwner",
-        "bBuildingSite",
-        "iBuildingType",
-        "bRessource",
-        "iRessourceType",
-    ];
     private immutable ushort _width, _height;
     private immutable Connectivity _connectivity;
-    private BoardData!ubyte _boardData;
+    private BoardData!Data _boardData;
 
     this(ushort width, ushort height, Connectivity connectivity){
         _height = height;
         _width = width;
         _connectivity = connectivity;
-        _boardData = new BoardData!ubyte(_width, _height);
-        addAllDataType();
+        _boardData = new BoardData!(Data)(_width, _height);
     }
 
     public void loadFromFile(string path){
@@ -60,65 +42,64 @@ class Map {
         foreach(ulong index, JSONValue layer; layers){
             string name = layer["name"].str;
             JSONValue dataArray = layer["data"];
-            switch(name[0]){
-                case 'i':
-                    foreach(ulong subIndex, JSONValue data; dataArray){
-                        ubyte value = to!ubyte(data.integer);
-                        uint x = to!uint(subIndex)%_width;
-                        uint y = to!uint(subIndex)/_width;
-                        _boardData.setData!ubyte(name, x, y, value);
-                    }
-                    break;
-                case 'b':
-                    foreach(ulong subIndex, JSONValue data; dataArray){
-                        bool value = data.integer != 0;
-                        uint x = to!uint(subIndex)%_width;
-                        uint y = to!uint(subIndex)/_width;
-                        //writeln(subIndex, " -> ", x, ":", y, " = ", value);
-                        _boardData.setData!bool(name, x, y, value);
-                    }
-                    break;
-                default:
-                    throw new Exception("Error in Map : DataType incorrect");
-            }
-            
-            
-        }
-    }
-
-    private void addAllDataType(){
-        foreach(string type; dataTypes){
-            if(type.length <= 0)
-                throw new Exception("Error in Map : DataType incorrect");
-            switch(type[0]){
-                case 'i':
-                    _boardData.addDataType(type);
-                    break;
-                case 'b':
-                    _boardData.addDataType(type);
-                    break;
-                default:
-                    throw new Exception("Error in Map : DataType incorrect");
+            foreach(ulong subIndex, JSONValue data; dataArray){
+                uint x = to!uint(subIndex)%_width;
+                uint y = to!uint(subIndex)/_width;
+                setData(name, x, y, to!uint(data.integer));
             }
         }
     }
 
-    public T getData(T)(string key, uint x, uint y){
-        return _boardData.getData!T(key, x, y);
+    override public string toString(){
+        string output = "";
+        for(int j = 0; j < _height; ++j){
+            for(int i = 0; i < _width; ++i){
+                output ~= to!string(to!uint(_boardData.get!"blocked"(i, j)));
+            }
+            output ~= "\n";
+        }
+        return output;
     }
 
-    public bool containsKey(string key){
-        return _boardData.containsKey(key);
+    public auto getData(string member)(uint x, uint y){
+        return _boardData.get!member(x, y);
+    }
+
+    public auto setData(string member, T)(uint x, uint y, T value){
+        return _boardData.set!member(x, y, value);
+    }
+
+    private void setData(string name, uint x, uint y, uint value){
+        switch(name){
+            case "bBlocked":
+                _boardData.set!"blocked"(x, y, to!bool(value));
+                break;
+            case "iOwner":
+                _boardData.set!"owner"(x, y, value);
+                break;
+            case "bBuildingSite":
+                _boardData.set!"buildingSite"(x, y, to!bool(value));
+                break;
+            case "iBuildingType":
+                _boardData.set!"buildingType"(x, y, value);
+                break;
+            case "iRessourceType":
+                _boardData.set!"ressourceType"(x, y, value);
+                break;
+            default:
+                throw new Exception("Incorrect BoardData member : " ~ name);
+        }
     }
 
     public bool isBlocked(uint x, uint y){
-        return _boardData.getData!bool("bBlocked", x, y);
+        return _boardData.get!"blocked"(x, y);
     }
 
     public bool isInBoundaries(uint x, uint y){
         return !(x >= _width || x < 0 || y >= _height || y < 0);
     }
 
+    /*
     public uint getPath(uint xs, uint ys, uint xt, uint yt, uint max_mov = 100){
         auto nodeList = new BinaryHeap!(Node[], "a.d > b.d")(null, _width*_height/2);
         bool[][] visited = new bool[][](_width, _height);
@@ -148,29 +129,16 @@ class Map {
         }while(true);
         return -1;
     }
+    */
+}
 
-    unittest {
-        import std.stdio;
-        Map map = new Map(25, 19, Map.Connectivity.eightConn);
-        foreach(string type; map.dataTypes)
-            assert(map.containsKey(type));
-        
-        import std.datetime;
-        StopWatch sw;
-        
-        sw.start();
-        int dist = map.getPath(0, 0, 23, 17, 50);
-        writeln(dist, " (", sw.peek().nsecs/1e6, "ms)");
+unittest {
+    import std.stdio;
+    Map map = new Map(25, 19, Connectivity.fourConn);
+    map.loadFromFile("map.json");
+    writeln(map.toString());
 
-        map.loadFromFile("map.json");
-        for(int y = 0; y < 19; ++y){
-            for(int x = 0; x < 25; ++x){
-                write(map.getData!ubyte("bBlocked", x, y));
-            }
-            writeln();
-        }
-        sw.reset();
-        dist = map.getPath(0, 0, 23, 17, 100);
-        writeln(dist, " (", sw.peek().nsecs/1e6, "ms)");
-    }
+    map.setData!"blocked"(2, 2, true);
+
+    writeln(map.toString());
 }
