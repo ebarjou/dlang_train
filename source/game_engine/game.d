@@ -7,16 +7,19 @@ import game_engine.actor.unit;
 import game_engine.actor.building;
 import game_engine.game_state;
 import game_engine.player.i_player;
+import game_engine.ruleChecker.rule_checker;
 
 import std.random;
 import std.concurrency;
 
 class Game {
     private GameState gameState;
+    private RuleChecker ruleChecker;
     private PlayerData[uint] playerDatas;
 
     private this(){
         this.gameState = new GameState();
+        this.ruleChecker = new RuleChecker();
     }
 
     public static loop(){
@@ -46,11 +49,11 @@ class Game {
     }
 
     bool isActionValid(immutable Action action){
-        return true;
+        return ruleChecker.isActionValid(action, getGameState());
     }
 
-    void submitTurnAction(immutable TurnAction turnAction){
-        
+    bool submitTurnAction(immutable TurnAction turnAction){
+        return true;
     }
 
     immutable(GameState) getGameState(){

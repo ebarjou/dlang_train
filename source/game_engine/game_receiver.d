@@ -7,25 +7,27 @@ import game_engine.game_state;
 
 import std.stdio;
 import std.concurrency;
+import std.conv;
 
 public struct Token {
     uint playerId;
     MessageType type;
 }
+
 public enum MessageType {   TurnOver, ActionValid, ActionInvalid,
                         TurnMove, TurnBattle, TurnRetreat,
                         GetState, ExitGame, Error, Action }
 
 class GameReceiver {
-    
+    private static GameReceiver instance;
     private Game game;
-    package static GameReceiver instance;
 
     private this(Game game){
         this.game = game;
     }
 
-    static void loop(Game game){
+    public static void loop(Game game){
+        assert(instance is null, "A GameReceiver instance already exist");
         writeln("SERVER : Starting Engine... ");
         instance = new GameReceiver(game);
 
@@ -36,14 +38,14 @@ class GameReceiver {
                 (immutable Action action){
                     instance.handleAction(action);
                 },
-                (Tid tid){
-                    instance.handleTid(tid);
-                },
                 (immutable Token token){
                     instance.handleMessage(token);
                 },
+                (Tid tid){
+                    instance.handleTid(tid);
+                },
                 (Variant variant){
-                    writeln("SERVER : Incorrect message received.");
+                    writeln("SERVER : Ignoring message : " ~ to!string(variant));
                 }
             );
         } while(true);
@@ -66,7 +68,7 @@ class GameReceiver {
         }*/
     }
 
-    package void handleAction(immutable Action action){
+    private void handleAction(immutable Action action){
         writeln("SERVER : received ", action.type ,", x : ", action.xs, ", y : ", action.ys);
         if(action.type == Action.Type.SEND){
             handleTurnAction(action.actionTurn);
@@ -75,12 +77,13 @@ class GameReceiver {
         }
     }
 
-    package void handleTurnAction(immutable TurnAction turnAction){
+    private void handleTurnAction(immutable TurnAction turnAction){
         writeln("SERVER : received TurnAction composed of ", turnAction.getLength() , " actions.");
-        respond!bool(turnAction.playerId, true);
+
+        respond!bool(turnAction.playerId, game.submitTurnAction(turnAction));
     }
 
-    package void handleMessage(Token token){
+    private void handleMessage(Token token){
         writeln("SERVER : received ", token.type);
         switch (token.type) {
             case(MessageType.ExitGame):
@@ -94,7 +97,7 @@ class GameReceiver {
         }
     }
 
-    package void handleTid(Tid tid){
+    private void handleTid(Tid tid){
         writeln("SERVER : New player connected");
         respond!uint(tid, game.addPlayer(tid) );
     }

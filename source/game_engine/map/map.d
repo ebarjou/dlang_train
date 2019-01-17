@@ -24,8 +24,8 @@ class Map {
         [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [1, 1], [-1, 1], [-1, -1]],
         [[-1, -1], [-1, 0], [-1, 1], [0, 1], [1, 0], [0, -1]]
     ];
-    private immutable ushort _width, _height;
-    private immutable Connectivity _connectivity;
+    public immutable ushort _width, _height;
+    public immutable Connectivity _connectivity;
     private BoardData!Data _boardData;
 
     this(ushort width, ushort height, Connectivity connectivity){
@@ -33,6 +33,13 @@ class Map {
         _width = width;
         _connectivity = connectivity;
         _boardData = new BoardData!(Data)(_width, _height);
+    }
+
+    this(Map map) immutable {
+        _height = map._height;
+        _width = map._width;
+        _connectivity = map._connectivity;
+        _boardData = map.getBoardData();
     }
 
     public void loadFromFile(string path){
