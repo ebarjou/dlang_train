@@ -2,13 +2,12 @@ module game_engine.ruleChecker.rule_checker;
 
 import game_engine.turn.action;
 import game_engine.game_state;
-import game_engine.ruleChecker.masterRules.a_master_rule;
-import game_engine.ruleChecker.masterRules.rule_move;
+import game_engine.ruleChecker.rules.rule_move;
+import game_engine.ruleChecker.rules.rule_qunit;
+import game_engine.ruleChecker.rules.rule_qbuilding;
 
 import std.stdio;
 import std.conv;
-
-alias MoveRule = Rule!(RuleMove, "CoordInBoard", "CoordInBoard");
 
 class RuleChecker {
 
@@ -17,6 +16,10 @@ class RuleChecker {
             case Action.Type.MOVE:
                 writeln("Check action MOVE");
                 return MoveRule.verify(action, gameState);
+            case Action.Type.QUNIT:
+                return QUnitRule.verify(action, gameState);
+            case Action.Type.QBUILD:
+                return QBuildingRule.verify(action, gameState);
             default:
                 throw new Exception("This action type is not handled by the RuleChecker : " ~ to!string(action.type));
         }

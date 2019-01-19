@@ -14,6 +14,7 @@ import std.regex;
 import std.conv;
 import std.exception;
 import core.time;
+import std.variant;
 
 class CLInterface : APlayerThread {
     protected Tid async_io;
@@ -33,20 +34,19 @@ class CLInterface : APlayerThread {
             receive(
                 (string input){
                     try {
-                        MessageType type;
-                        immutable Action action = parseCommand(input, type);
-                        if(type == MessageType.Action) {
-                            sendAction(action);
-                        } else {
-                            sendToken(type);                    
-                        }
+                        handleCommand(input);
                         send!bool(async_io, true);
                     } catch (Exception e){
                         writeln(e.msg);
+                        send!bool(async_io, false);
                     }
                 }
             );
         } while(true);  
+    }
+
+    override protected void handleGameState(immutable GameState gameState){
+        writeln(gameState.classinfo);
     }
 
     override protected void onConnectionLost(){
@@ -63,6 +63,16 @@ class CLInterface : APlayerThread {
             receiveOnly!bool();
         } while(true);
     }
+
+    private void handleCommand(string input){
+        MessageType type;
+        immutable Action action = parseCommand(input, type);
+        if(type == MessageType.Action) {
+            sendAction(action);
+        } else {
+            sendToken(type);
+        }
+    };
 
     private Captures!string matchRegex(string str, string rgx, uint nb_expected){
         auto regex_match = regex(rgx);
@@ -82,7 +92,7 @@ class CLInterface : APlayerThread {
 
         switch(opt) {
             case "move":
-                Captures!string args = matchRegex(arg, "([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)", 4);
+                Captures!string args = matchRegex(arg, "([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)([ ][0-9]+)*", 0);
                 auto action = new immutable Action(
                     playerId, 
                     to!uint(args[1]), 
@@ -90,6 +100,7 @@ class CLInterface : APlayerThread {
                     to!uint(args[3]), 
                     to!uint(args[4])
                     );
+                    //writeln("variadic : " ~ args[5..$]);
                 type = MessageType.Action;
                 return action;
             case "qbuild":

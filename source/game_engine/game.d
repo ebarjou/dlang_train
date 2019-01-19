@@ -6,7 +6,7 @@ import game_engine.game_receiver;
 import game_engine.actor.unit;
 import game_engine.actor.building;
 import game_engine.game_state;
-import game_engine.player.i_player;
+import game_engine.actor.player;
 import game_engine.ruleChecker.rule_checker;
 
 import std.random;
@@ -15,7 +15,7 @@ import std.concurrency;
 class Game {
     private GameState gameState;
     private RuleChecker ruleChecker;
-    private PlayerData[uint] playerDatas;
+    private Tid[uint] playerTid;
 
     private this(){
         this.gameState = new GameState();
@@ -34,18 +34,18 @@ class Game {
     * Returns:
     *       id of the added player
     */
-    uint addPlayer(Tid playerTid){
+    uint addPlayer(Tid tid){
         uint newId = uniform(uint.min, uint.max);
-        playerDatas[newId] = PlayerData(newId, playerTid);
+        playerTid[newId] = tid;
         return newId;
     }
 
     bool isPlayerPresent(uint playerId){
-        return ((playerId in playerDatas) !is null);
+        return ((playerId in playerTid) !is null);
     }
 
     void removePlayer(uint playerId){
-        playerDatas.remove(playerId);
+        playerTid.remove(playerId);
     }
 
     bool isActionValid(immutable Action action){
@@ -60,8 +60,8 @@ class Game {
         return new immutable GameState(this.gameState);
     }
 
-    PlayerData getPlayerData(uint playerId){
-        return playerDatas[playerId];
+    Tid getPlayerTid(uint playerId){
+        return playerTid[playerId];
     }
 
     /**

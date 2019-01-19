@@ -57,7 +57,7 @@ class GameReceiver {
 
     private void respond(T)(uint playerId, T message){
         if(game.isPlayerPresent(playerId))
-            respond!T(game.getPlayerData(playerId).threadId, message);
+            respond!T(game.getPlayerTid(playerId), message);
         else
             writeln("SERVER : Unknown player ", playerId);
     }
@@ -79,7 +79,6 @@ class GameReceiver {
 
     private void handleTurnAction(immutable TurnAction turnAction){
         writeln("SERVER : received TurnAction composed of ", turnAction.getLength() , " actions.");
-
         respond!bool(turnAction.playerId, game.submitTurnAction(turnAction));
     }
 

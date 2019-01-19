@@ -1,13 +1,14 @@
-module game_engine.ruleChecker.masterRules.a_master_rule;
+module game_engine.ruleChecker.master_rule;
 
 import game_engine.turn.action;
 import game_engine.game_state;
-import game_engine.ruleChecker.subRules.i_sub_rule;
-import game_engine.ruleChecker.subRules.coord_in_board;
+import game_engine.ruleChecker.rules.sub_rules.i_sub_rule;
+import game_engine.ruleChecker.rules.i_apply_rule;
+import game_engine.ruleChecker.rules.sub_rules.coord_in_board;
 
-class Rule(T:IMasterRule, R...) {
+class Rule(T:IApplyRule, R...) {
     private static ISubRule[] subRules;
-    private static IMasterRule masterRule;
+    private static IApplyRule applyRule;
 
     public static bool verify(immutable(Action) action, immutable(GameState) gameState){
         if(subRules.length == 0){
@@ -25,14 +26,10 @@ class Rule(T:IMasterRule, R...) {
         foreach(rule; R){
             this.subRules ~= mixin("new " ~ rule ~ "()");
         }
-        masterRule = new T();
+        applyRule = new T();
     }
 
     public static void apply(immutable(Action) action, GameState gameState){
-        masterRule.apply(action, gameState);
+        applyRule.apply(action, gameState);
     }
-}
-
-interface IMasterRule {
-    void apply(immutable(Action) action, GameState gameState);
 }

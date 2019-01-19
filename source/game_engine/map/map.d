@@ -3,8 +3,6 @@ module game_engine.map.map;
 import game_engine.map.board_data;
 
 import std.container;
-import std.file;
-import std.json;
 import std.conv : to;
 
 immutable static enum Connectivity {fourConn=0, eightConn, hexConn}
@@ -42,21 +40,6 @@ class Map {
         _boardData = map.getBoardData();
     }
 
-    public void loadFromFile(string path){
-        string content = readText(path);
-        JSONValue json = parseJSON(content);
-        JSONValue layers = json["layers"];
-        foreach(ulong index, JSONValue layer; layers){
-            string name = layer["name"].str;
-            JSONValue dataArray = layer["data"];
-            foreach(ulong subIndex, JSONValue data; dataArray){
-                uint x = to!uint(subIndex)%_width;
-                uint y = to!uint(subIndex)/_width;
-                setData(name, x, y, to!uint(data.integer));
-            }
-        }
-    }
-
     override public string toString(){
         string output = "";
         for(int j = 0; j < _height; ++j){
@@ -80,7 +63,7 @@ class Map {
         return _boardData.set!member(x, y, value);
     }
 
-    private void setData(string name, uint x, uint y, uint value){
+    public void setData(string name, uint x, uint y, uint value){
         switch(name){
             case "bBlocked":
                 _boardData.set!"blocked"(x, y, to!bool(value));

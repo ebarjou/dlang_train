@@ -37,6 +37,7 @@ abstract class APlayerThread : Thread {
     abstract protected void init();
     abstract protected void loop();
     abstract protected void onConnectionLost();
+    abstract protected void handleGameState(immutable GameState gameState);
 
     private void thread_init(){
         writeln("INTERFACE : Adding new player...");
@@ -72,7 +73,7 @@ abstract class APlayerThread : Thread {
         send!(immutable Token)(gameEngine, token);
         bool responded = receiveTimeout(timeout,
             (immutable GameState gameState){
-                writeln("INTERFACE : GameState received.");
+                handleGameState(gameState);
             },
             (Variant variant){
                 onConnectionLost();

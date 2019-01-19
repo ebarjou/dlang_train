@@ -1,12 +1,14 @@
 module game_engine.game_state;
 
 import game_engine.map.map;
+import game_engine.actor.player;
 
 class GameState {
     public enum TurnPhase {Move, Battle, Retreat}
     private TurnPhase currentPhase;
     private uint currentTurn;
     private Map map;
+    private Player[uint] playerList;
 
     this(){
         currentTurn = 0;
@@ -18,6 +20,7 @@ class GameState {
         currentTurn = gameState.currentTurn;
         currentPhase = gameState.currentPhase;
         this.map = gameState.getMap();
+        //this.playerList = gameState.getPlayerList();
     }
 
     immutable(Map) getMap(){
