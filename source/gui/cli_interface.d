@@ -45,8 +45,8 @@ class CLInterface : APlayerThread {
         } while(true);  
     }
 
-    override protected void handleGameState(immutable GameState gameState){
-        writeln(gameState.classinfo);
+    override protected void handleGameState(GameState gameState){
+        writeln(to!string(gameState.currentPhase));
     }
 
     override protected void onConnectionLost(){

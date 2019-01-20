@@ -2,44 +2,51 @@ module game_engine.map.board_data;
 
 import std.conv;
 
-class BoardData(T) {
-    public immutable uint width, height;
-    private T[][] _data;
+alias BoardData = BoardDataGeneric!(CaseData, 25, 19);
 
-    public this(uint width, uint height){
-        this.height = width;
-        this.width = height;
-        this._data = new T[][](width, height);
-    }
+struct CaseData {
+    bool blocked;
+    uint owner;
+    bool buildingSite;
+    uint buildingType;
+    bool ressource;
+    uint ressourceType;
+}
 
-    private this(uint width, uint height, T[][] data) immutable {
-        this.height = width;
-        this.width = height;
+struct BoardDataGeneric(T, uint W, uint H) {
+    public uint width = W, height = H;
+    public T[W][H] data;
 
+    void set(T[][] data) {
         T[][] duplicate;
-        for(int i = 0; i < width; ++i){
-            duplicate ~= data[i].dup();
+        for(int i = 0; i < height; ++i){
+            for(int j = 0; j < width; ++j){
+                this.data[i][j] = data[i][j];
+            }
         }    
-
-        this._data = duplicate.to!(immutable(T[][]));
     }
 
-    public auto get(string member)(uint x, uint y) immutable {
-        return mixin("_data[x][y]." ~ member);
+    void set(string name, uint x, uint y, uint value){
+        switch(name){
+            case "bBlocked":
+                data[x][y].blocked = to!bool(value);
+                break;
+            case "iOwner":
+                data[x][y].owner = value;
+                break;
+            case "bBuildingSite":
+                data[x][y].buildingSite = to!bool(value);
+                break;
+            case "iBuildingType":
+                data[x][y].buildingType = value;
+                break;
+            case "iRessourceType":
+                data[x][y].ressourceType = value;
+                break;
+            default:
+                throw new Exception("Incorrect BoardData member : " ~ name);
+        }
     }
-
-    public auto get(string member)(uint x, uint y) {
-        return mixin("_data[x][y]." ~ member);
-    }
-
-    public void set(string member, D)(uint x, uint y, D value){
-        mixin("_data[x][y]." ~ member) = value;
-    }
-
-    public immutable(BoardData) idup(){
-        return new immutable BoardData(this.height, this.width, this._data);
-    }
-
 }
 
 unittest {
@@ -50,10 +57,13 @@ unittest {
         float y;
     }
 
-    BoardData!(DataTest) bd = new BoardData!(DataTest)(10, 20);
+    auto bd = new BoardDataGeneric!(DataTest,10, 20);
 
-    bd.set!"x"(0, 0, 2);
-    uint x = bd.get!"x"(0,0);
+    bd.data[0][0].x = 2;
+    uint x = bd.data[0][0].x;
+
+    immutable ibd = cast(immutable)bd;
 
     assert(x == 2);
+    assert(ibd.data[0][0].x == 2);
 }

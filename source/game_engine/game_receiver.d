@@ -88,8 +88,7 @@ class GameReceiver {
             case(MessageType.ExitGame):
                 break;
             case(MessageType.GetState):
-                immutable GameState gameState = game.getGameState();
-                respond!(immutable GameState)(token.playerId, gameState);
+                respond!(GameState)(token.playerId, game.getGameState());
                 break;
             default:
                 break;

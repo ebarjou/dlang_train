@@ -11,7 +11,7 @@ import std.conv;
 
 class RuleChecker {
 
-    public bool isActionValid(immutable(Action) action, immutable(GameState) gameState){
+    public bool isActionValid(immutable(Action) action, GameState gameState){
         switch(action.type){
             case Action.Type.MOVE:
                 writeln("Check action MOVE");

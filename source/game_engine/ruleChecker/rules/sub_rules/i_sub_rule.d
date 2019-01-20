@@ -4,5 +4,5 @@ import game_engine.turn.action;
 import game_engine.game_state;
 
 interface ISubRule {
-    bool verify(immutable(Action) action, immutable(GameState) gameState);
+    bool verify(immutable(Action) action, GameState gameState);
 }

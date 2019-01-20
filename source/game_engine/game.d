@@ -8,6 +8,7 @@ import game_engine.actor.building;
 import game_engine.game_state;
 import game_engine.actor.player;
 import game_engine.ruleChecker.rule_checker;
+import game_engine.map.map;
 
 import std.random;
 import std.concurrency;
@@ -18,7 +19,7 @@ class Game {
     private Tid[uint] playerTid;
 
     private this(){
-        this.gameState = new GameState();
+        gameState.map.connectivity = Connectivity.hexConn;
         this.ruleChecker = new RuleChecker();
     }
 
@@ -56,8 +57,8 @@ class Game {
         return true;
     }
 
-    immutable(GameState) getGameState(){
-        return new immutable GameState(this.gameState);
+    GameState getGameState(){
+        return this.gameState;
     }
 
     Tid getPlayerTid(uint playerId){
